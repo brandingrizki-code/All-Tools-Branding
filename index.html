@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Penghitung Kata + Sidebar + Case Converter</title>
+  <style>
+    :root{
+      --bg:#f7f7f8; --card:#fff; --line:#e5e7eb; --text:#111827; --muted:#6b7280;
+      --accent:#2563eb; --hover:#f3f4f6; --radius:12px; --sidebar-w:250px;
+    }
+    *{box-sizing:border-box} body{margin:0;font-family:Inter,Arial,system-ui,sans-serif;background:var(--bg);color:var(--text)}
+    a{color:inherit;text-decoration:none} a:hover{color:var(--accent)}
+    .topbar{position:sticky;top:0;z-index:30;background:var(--card);border-bottom:1px solid var(--line);
+      display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 14px}
+    .brand{font-weight:700;}
+    .btn{border:1px solid var(--line);background:var(--card);padding:8px 12px;border-radius:10px;cursor:pointer}
+    .btn:hover{background:var(--hover)}
+    .layout{display:grid;grid-template-columns:var(--sidebar-w) 1fr var(--sidebar-w);gap:16px;padding:16px;max-width:1400px;margin:0 auto}
+    .sidebar{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:12px;height:calc(100dvh - 100px);
+      position:sticky;top:70px;overflow:auto}
+    .side-title{font-size:14px;font-weight:700;margin:4px 0 8px}
+    .nav{display:flex;flex-direction:column;gap:6px}
+    .nav a{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-radius:10px;border:1px solid transparent}
+    .nav a:hover{background:var(--hover);border-color:var(--line)}
+    .divider{height:1px;background:var(--line);margin:10px 0}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px}
+    .title{margin:0 0 8px;text-align:center;font-size:22px;font-weight:800}
+    .stats{display:grid;grid-template-columns:repeat(5,minmax(120px,1fr));gap:12px;margin:12px 0}
+    .stat{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px;text-align:center;box-shadow:0 2px 6px rgba(0,0,0,.04)}
+    .stat h3{margin:0;font-size:26px}.stat p{margin:6px 0 0;color:var(--muted)}
+    textarea{width:100%;height:260px;padding:12px;font-size:16px;border:1px solid var(--line);border-radius:10px;background:var(--card);resize:vertical}
+    .case-bar{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+    .case-btn{border:1px solid var(--line);background:var(--card);padding:8px 10px;border-radius:10px;cursor:pointer;font-size:14px}
+    .case-btn:hover{background:var(--hover)}
+    .case-btn.primary{border-color:#c7d2fe}
+    .toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:#111827;color:#fff;padding:10px 14px;border-radius:10px;
+      opacity:0;pointer-events:none;transition:opacity .2s, transform .2s;z-index:50}
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(-6px)}
+    .overlay{position:fixed;inset:56px 0 0 0;background:rgba(0,0,0,.25);display:none;z-index:25}
+    .overlay.show{display:block}
+    @media (max-width:980px){
+      .layout{grid-template-columns:1fr}
+      .sidebar{position:fixed;top:56px;bottom:0;width:min(92vw,380px);height:auto;border-radius:12px 12px 0 0}
+      .sidebar.left{left:12px;transform:translateX(-110%)} .sidebar.right{right:12px;transform:translateX(110%)}
+      .sidebar.open{transform:translateX(0)}
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <div class="topbar" role="banner">
+    <button class="btn" id="openLeft" aria-controls="leftSidebar" aria-expanded="false">☰ Menu Kiri</button>
+    <div class="brand">Penghitung Kata</div>
+    <button class="btn" id="openRight" aria-controls="rightSidebar" aria-expanded="false">Menu Kanan ☰</button>
+  </div>
+
+  <div class="overlay" id="overlay"></div>
+
+  <div class="layout">
+    <!-- Sidebar Kiri -->
+    <aside class="sidebar left" id="leftSidebar" aria-label="Menu kiri">
+      <div class="side-title">💡 Link Penting</div>
+      <nav class="nav">
+        <a href="https://docs.google.com/spreadsheets/d/1MbyVgxqYnK-BZH73eibh1IzNjh7ZrtbH6TCU09-uhJE/edit?gid=1227079044#gid=1227079044" target="_blank" rel="noopener">Spreadsheet - Ekstrak Image To Teks<span style="color:#6b7280;font-size:12px">baru</span></a>
+        <a href="https://script.google.com/macros/s/AKfycbyvQyqvVtDYhSTJQSJ6PLfiE-YYfpBQXvsq78kn72cuYo4LamCj56xWNYqxEbZflonM/exec" target="_blank" rel="noopener">Tools - Ekstrak Image To Teks</a>
+        <a href="https://contoh.com/turnitin" target="_blank" rel="noopener">Checker Turnitin</a>
+        <a href="https://contoh.com/paraphrase" target="_blank" rel="noopener">Paraphrase Tool</a>
+        <a href="https://contoh.com/grammar" target="_blank" rel="noopener">Grammar Checker</a>
+      </nav>
+      <div class="divider"></div>
+      <div class="side-title">🧰 Utilitas</div>
+      <nav class="nav">
+        <a href="#" target="_blank" rel="noopener">Penghitung Kata</a>
+        <a href="#" target="_blank" rel="noopener">Penghitung Karakter</a>
+        <a href="#" target="_blank" rel="noopener">Slug Generator</a>
+      </nav>
+    </aside>
+
+    <!-- Main -->
+    <main class="card" role="main" aria-live="polite">
+      <h1 class="title">Penghitung Kata</h1>
+
+      <div class="stats">
+        <div class="stat"><h3 id="words">0</h3><p>Kata</p></div>
+        <div class="stat"><h3 id="chars">0</h3><p>Karakter (termasuk spasi)</p></div>
+        <div class="stat"><h3 id="charsNoSpace">0</h3><p>Karakter (tanpa spasi)</p></div>
+        <div class="stat"><h3 id="paras">0</h3><p>Paragraf</p></div>
+        <div class="stat"><h3 id="sents">0</h3><p>Kalimat</p></div>
+      </div>
+
+      <textarea id="text" placeholder="Ketik atau tempel teks di sini..."></textarea>
+
+      <!-- CASE CONVERTER BUTTONS + COPY -->
+      <div class="case-bar" aria-label="Case Converter">
+        <button class="case-btn primary" data-case="upper" title="UPPERCASE">UPPERCASE</button>
+        <button class="case-btn" data-case="lower" title="lowercase">lowercase</button>
+        <button class="case-btn" data-case="title" title="Capitalize Each Word">Capitalize Each Word</button>
+        <button class="case-btn" data-case="sentence" title="Sentence case">Sentence case</button>
+        <button class="case-btn" data-case="toggle" title="tOGGLE cASE">tOGGLE cASE</button>
+        <button class="case-btn" id="clearText" title="Bersihkan teks">Clear</button>
+        <button class="case-btn" id="copyText" title="Salin ke clipboard">Copy</button>
+      </div>
+    </main>
+
+    <!-- Sidebar Kanan -->
+    <aside class="sidebar right" id="rightSidebar" aria-label="Menu kanan">
+      <div class="side-title">🔗 Link Cepat</div>
+      <nav class="nav">
+        <a href="https://contoh.com/waktu-baca" target="_blank" rel="noopener">Kalkulator Waktu Baca</a>
+        <a href="https://contoh.com/wpm-speech" target="_blank" rel="noopener">Estimasi Waktu Pidato</a>
+        <a href="https://contoh.com/keyword" target="_blank" rel="noopener">Ekstrak Kata Kunci</a>
+        <a href="https://contoh.com/stopwords" target="_blank" rel="noopener">Stopwords ID/EN</a>
+        <a href="https://contoh.com/case-converter" target="_blank" rel="noopener">Ubah Huruf</a>
+      </nav>
+      <div class="divider"></div>
+      <div class="side-title">📚 Sumber</div>
+      <nav class="nav">
+        <a href="https://contoh.com/panduan" target="_blank" rel="noopener">Panduan Penulisan</a>
+        <a href="https://contoh.com/eda" target="_blank" rel="noopener">Analisis Teks Dasar</a>
+      </nav>
+    </aside>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite">Tersalin ke clipboard</div>
+
+  <script>
+    // ======= Word counter (spasi dihitung di karakter saja) =======
+    const textArea = document.getElementById("text");
+    const wordsEl = document.getElementById("words");
+    const charsEl = document.getElementById("chars");
+    const charsNoSpaceEl = document.getElementById("charsNoSpace");
+    const parasEl = document.getElementById("paras");
+    const sentsEl = document.getElementById("sents");
+    const toastEl = document.getElementById("toast");
+
+    function updateStats() {
+      const text = textArea.value;
+      const wordMatches = text.match(/\S+/g);
+      const words = wordMatches ? wordMatches.length : 0;
+      const chars = text.length;
+      const charsNoSpace = text.replace(/\s/g, "").length;
+      const paras = text.trim().length ? text.split(/\n+/).filter(p => p.trim().length).length : 0;
+      const sents = text.trim().length ? text.split(/[.!?]+/).filter(s => s.trim().length).length : 0;
+
+      wordsEl.textContent = words;
+      charsEl.textContent = chars;
+      charsNoSpaceEl.textContent = charsNoSpace;
+      parasEl.textContent = paras;
+      sentsEl.textContent = sents;
+    }
+    textArea.addEventListener("input", updateStats);
+
+    // ======= Case Converter (instant buttons) =======
+    function convertCase(text, type){
+      switch(type){
+        case "upper": return text.toUpperCase();
+        case "lower": return text.toLowerCase();
+        case "title":
+          return text.toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
+        case "sentence":
+          return text.toLowerCase().replace(/(^\s*\w|[.!?]\s*\w)/g, c => c.toUpperCase());
+        case "toggle":
+          return text.split("").map(ch => ch === ch.toUpperCase() ? ch.toLowerCase() : ch.toUpperCase()).join("");
+        default: return text;
+      }
+    }
+
+    // Apply converter on click
+    document.querySelectorAll(".case-btn[data-case]").forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        const type = btn.getAttribute("data-case");
+        const start = textArea.selectionStart, end = textArea.selectionEnd;
+        const hasSelection = end > start;
+        if(hasSelection){
+          const before = textArea.value.slice(0, start);
+          const sel = textArea.value.slice(start, end);
+          const after = textArea.value.slice(end);
+          textArea.value = before + convertCase(sel, type) + after;
+          textArea.setSelectionRange(start, start + convertCase(sel, type).length);
+        } else {
+          textArea.value = convertCase(textArea.value, type);
+        }
+        textArea.focus();
+        updateStats();
+      });
+    });
+
+    // Clear & Copy
+    document.getElementById("clearText").addEventListener("click", ()=>{
+      textArea.value = "";
+      updateStats();
+      textArea.focus();
+    });
+
+    function showToast(msg="Tersalin ke clipboard"){
+      toastEl.textContent = msg;
+      toastEl.classList.add("show");
+      setTimeout(()=> toastEl.classList.remove("show"), 1100);
+    }
+
+    document.getElementById("copyText").addEventListener("click", async ()=>{
+      try{
+        await navigator.clipboard.writeText(textArea.value);
+        showToast();
+      }catch(e){
+        // Fallback
+        textArea.select();
+        document.execCommand("copy");
+        showToast();
+      }
+      textArea.setSelectionRange(textArea.value.length, textArea.value.length);
+      textArea.blur(); // optional: hilangkan highlight
+    });
+
+    // ======= Mobile sidebars toggle =======
+    const left = document.getElementById("leftSidebar");
+    const right = document.getElementById("rightSidebar");
+    const overlay = document.getElementById("overlay");
+    const openLeftBtn = document.getElementById("openLeft");
+    const openRightBtn = document.getElementById("openRight");
+
+    function closeAll(){
+      left.classList.remove("open"); right.classList.remove("open");
+      overlay.classList.remove("show");
+      openLeftBtn.setAttribute("aria-expanded","false");
+      openRightBtn.setAttribute("aria-expanded","false");
+    }
+    function openSide(which){
+      if(which==="left"){ left.classList.add("open"); openLeftBtn.setAttribute("aria-expanded","true"); }
+      if(which==="right"){ right.classList.add("open"); openRightBtn.setAttribute("aria-expanded","true"); }
+      overlay.classList.add("show");
+    }
+    openLeftBtn.addEventListener("click", ()=> openSide("left"));
+    openRightBtn.addEventListener("click", ()=> openSide("right"));
+    overlay.addEventListener("click", closeAll);
+    window.addEventListener("keydown", (e)=> { if(e.key==="Escape") closeAll(); });
+
+    // init
+    updateStats();
+  </script>
+</body>
+</html>
